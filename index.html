@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PT 薪資計算機</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --bg-color: #f4f7f6;
+            --card-bg: #fff;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h2 { text-align: center; color: var(--primary); margin: 5px 0 15px 0; font-size: 1.4em; }
+
+        /* 統計結果區塊 */
+        .result-box {
+            background: #eafaf1;
+            padding: 12px 10px;
+            border-radius: 8px;
+            margin: 0 0 15px 0;
+            border: 2px solid var(--success);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-item { text-align: center; flex: 1; min-width: 0; }
+        .result-item:first-child { border-right: 1px solid #bdc3c7; }
+        .result-label { font-size: 0.85em; color: #555; font-weight: bold; margin-bottom: 4px; }
+        .result-value { font-weight: bold; white-space: nowrap; }
+        .val-hours { color: var(--warning); font-size: 1.25em; }
+        .val-pay { color: var(--danger); font-size: 1.25em; }
+
+        /* 頂部控制區 */
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 5px;
+        }
+        .btn-setting {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 0 0 auto;
+        }
+        .month-nav-group {
+            display: flex;
+            align-items: center;
+            background: #ecf0f1;
+            border-radius: 6px;
+            flex: 1;
+            justify-content: space-between;
+        }
+        .nav-arrow { background: transparent; border: none; padding: 8px 12px; font-size: 1em; cursor: pointer; color: var(--primary); }
+        .calendar-header { font-weight: bold; cursor: pointer; user-select: none; font-size: 1em; }
+
+        /* 月曆樣式 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day-name { text-align: center; font-weight: bold; background: var(--primary); color: white; padding: 5px 0; border-radius: 4px; font-size: 0.85em; }
+        .calendar-cell {
+            background: #fff; border: 1px solid #bdc3c7; height: 55px; border-radius: 6px;
+            display: flex; flex-direction: column; align-items: center; padding-top: 3px; cursor: pointer;
+        }
+        .calendar-cell.has-data { background: #d4efdf; border-color: var(--success); }
+        .date-num { font-size: 0.9em; font-weight: bold; }
+        .cell-info { font-size: 0.75em; color: #7f8c8d; margin-top: 2px; text-align: center; font-weight: bold; }
+        .has-data .cell-info { color: var(--danger); }
+
+        /* 浮動視窗共用 */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 340px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.2s ease-out;
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        h3 { text-align: center; margin-top: 0; color: var(--primary); border-bottom: 2px solid #f4f7f6; padding-bottom: 10px; }
+
+        /* 時間輸入格樣式 */
+        .time-input-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+        .time-box {
+            flex: 1; background: #ecf0f1; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #bdc3c7;
+        }
+        .time-box label { display: block; font-size: 0.75em; color: #7f8c8d; margin-bottom: 3px; }
+        .time-box span { font-size: 1.2em; font-weight: bold; color: var(--primary); }
+
+        /* 休息時間控制 */
+        .control-label { font-weight: bold; font-size: 0.9em; margin-bottom: 8px; display: block; }
+        .stepper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+        .stepper button { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #bdc3c7; background: #eee; font-size: 1.2em; cursor: pointer; }
+        .stepper span { font-size: 1.2em; font-weight: bold; min-width: 60px; text-align: center; }
+
+        /* 開關按鈕 (Toggle) */
+        .toggle-group { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
+        .toggle-btn {
+            background: #bdc3c7; border: none; width: 50px; height: 26px; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-btn::before { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; left: 3px; top: 3px; transition: 0.3s; }
+        .toggle-btn.active { background: var(--success); }
+        .toggle-btn.active::before { left: 27px; }
+
+        /* 滾輪選擇器 sub-modal */
+        .picker-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: flex-end;
+        }
+        .picker-container {
+            background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box;
+        }
+        .picker-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .picker-body { display: flex; height: 180px; overflow: hidden; position: relative; justify-content: center; }
+        .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; scrollbar-width: none; }
+        .picker-col::-webkit-scrollbar { display: none; }
+        .picker-item { height: 40px; line-height: 40px; font-size: 1.2em; scroll-snap-align: center; color: #bdc3c7; }
+        .picker-item.selected { color: var(--primary); font-weight: bold; font-size: 1.4em; }
+        .picker-highlight {
+            position: absolute; top: 70px; left: 0; width: 100%; height: 40px; 
+            border-top: 1px solid #eee; border-bottom: 1px solid #eee; pointer-events: none;
+        }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-confirm { flex: 1; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .form-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; text-align: center; }
+
+        .clear-btn { width: 100%; background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 6px; margin-top: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>PT 薪資計算機</h2>
+    
+    <div class="result-box">
+        <div class="result-item">
+            <div class="result-label">當月總時數</div>
+            <div class="result-value val-hours"><span id="totalHours">0</span> hr</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">預估總薪資</div>
+            <div class="result-value val-pay">$ <span id="totalSalary">0</span></div>
+        </div>
+    </div>
+
+    <div class="top-controls">
+        <button id="btnOpenWageModal" class="btn-setting">💰 設定時薪</button>
+        <div class="month-nav-group">
+            <button id="btnPrevMonth" class="nav-arrow">◀</button>
+            <div class="calendar-header" id="monthDisplay">2026年3月</div>
+            <button id="btnNextMonth" class="nav-arrow">▶</button>
+        </div>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid"></div>
+
+    <button class="clear-btn" id="btnClearMonth">🗑️ 清除本月紀錄</button>
+</div>
+
+<div class="modal-overlay" id="entryModal">
+    <div class="modal-content">
+        <h3 id="entryTitle">3/30 工作紀錄</h3>
+        
+        <div class="time-input-row">
+            <div class="time-box" onclick="openPicker('start')">
+                <label>開始時間</label>
+                <span id="startTimeLabel">09:00</span>
+            </div>
+            <div class="time-box" onclick="openPicker('end')">
+                <label>結束時間</label>
+                <span id="endTimeLabel">18:00</span>
+            </div>
+        </div>
+
+        <label class="control-label">休息時間 (小時)</label>
+        <div class="stepper">
+            <button onclick="changeBreak(-0.5)">-</button>
+            <span id="breakLabel">0.0</span>
+            <button onclick="changeBreak(0.5)">+</button>
+        </div>
+
+        <div class="toggle-group">
+            <span style="font-weight:bold; font-size:0.9em;">休息時間計薪</span>
+            <button class="toggle-btn" id="paidBreakToggle" onclick="togglePaidBreak()"></button>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeEntryModal()">取消</button>
+            <button class="btn-confirm" onclick="saveEntry()">儲存</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="wageModal">
+    <div class="modal-content">
+        <h3>設定時薪</h3>
+        <p style="text-align:center; font-size:0.85em; color:var(--warning);" id="wageNote"></p>
+        <div class="form-group">
+            <input type="number" id="hourlyWageInput" placeholder="請輸入時薪">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeWageModal()">取消</button>
+            <button class="btn-confirm" onclick="saveWage()">儲存</button>
+        </div>
+    </div>
+</div>
+
+<div class="picker-overlay" id="pickerOverlay">
+    <div class="picker-container">
+        <div class="picker-header">
+            <span id="pickerTitle" style="font-weight:bold;">選擇時間</span>
+            <span style="color:var(--secondary); font-weight:bold; cursor:pointer;" onclick="confirmPicker()">完成</span>
+        </div>
+        <div class="picker-body">
+            <div class="picker-highlight"></div>
+            <div class="picker-col" id="hourCol"></div>
+            <div class="picker-col" id="minCol"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 狀態管理 ---
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    let allData = JSON.parse(localStorage.getItem('pt_calc_v1')) || {};
+
+    let editingDate = null;
+    let tempEntry = { start: "09:00", end: "18:00", break: 0, isPaid: false };
+    let pickingType = 'start';
+
+    // --- 初始化 ---
+    function init() {
+        renderCalendar();
+        updateStats();
+        initPickers();
+    }
+
+    function getMonthKey() { return `${currentYear}-${currentMonth}`; }
+
+    function getMonthData() {
+        const key = getMonthKey();
+        if (!allData[key]) {
+            // 最佳化：自動抓取上個月時薪
+            let pM = currentMonth - 1, pY = currentYear;
+            if(pM < 0) { pM = 11; pY--; }
+            const prevKey = `${pY}-${pM}`;
+            allData[key] = {
+                wage: allData[prevKey] ? allData[prevKey].wage : 190,
+                days: {}
+            };
+        }
+        return allData[key];
+    }
+
+    // --- 核心計算與視覺更新 ---
+    function updateStats() {
+        const data = getMonthData();
+        let totalH = 0;
+        for (let d in data.days) {
+            const entry = data.days[d];
+            const h = calculateDiff(entry.start, entry.end, entry.break, entry.isPaid);
+            totalH += h;
+        }
+        document.getElementById('totalHours').textContent = totalH;
+        document.getElementById('totalSalary').textContent = Math.round(totalH * data.wage).toLocaleString();
+        localStorage.setItem('pt_calc_v1', JSON.stringify(allData));
+    }
+
+    function calculateDiff(start, end, breakH, isPaid) {
+        const [sH, sM] = start.split(':').map(Number);
+        const [eH, eM] = end.split(':').map(Number);
+        let diff = (eH + eM/60) - (sH + sM/60);
+        if (diff < 0) diff += 24; // 跨夜處理
+        if (!isPaid) diff -= breakH;
+        return Math.max(0, diff);
+    }
+
+    function renderCalendar() {
+        const container = document.getElementById('calendarGrid');
+        const display = document.getElementById('monthDisplay');
+        display.textContent = `${currentYear}年${currentMonth + 1}月`;
+        
+        container.innerHTML = `
+            <div class="day-name" style="background:var(--danger)">日</div><div class="day-name">一</div>
+            <div class="day-name">二</div><div class="day-name">三</div><div class="day-name">四</div>
+            <div class="day-name">五</div><div class="day-name" style="background:var(--warning)">六</div>
+        `;
+
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const data = getMonthData();
+
+        for (let i = 0; i < firstDay; i++) container.appendChild(document.createElement('div'));
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell';
+            if (data.days[i]) cell.classList.add('has-data');
+            
+            cell.innerHTML = `<div class="date-num">${i}</div><div class="cell-info">${data.days[i] ? calculateDiff(data.days[i].start, data.days[i].end, data.days[i].break, data.days[i].isPaid).toFixed(1)+'h' : ''}</div>`;
+            cell.onclick = () => openEntryModal(i);
+            container.appendChild(cell);
+        }
+    }
+
+    // --- 視窗操作 ---
+    function openEntryModal(day) {
+        editingDate = day;
+        const data = getMonthData();
+        const entry = data.days[day] || { start: "09:00", end: "18:00", break: 0, isPaid: false };
+        tempEntry = { ...entry };
+        
+        document.getElementById('entryTitle').textContent = `${currentMonth+1}/${day} 工作紀錄`;
+        document.getElementById('startTimeLabel').textContent = tempEntry.start;
+        document.getElementById('endTimeLabel').textContent = tempEntry.end;
+        document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
+        
+        const toggle = document.getElementById('paidBreakToggle');
+        tempEntry.isPaid ? toggle.classList.add('active') : toggle.classList.remove('active');
+        
+        document.getElementById('entryModal').style.display = 'flex';
+    }
+
+    function closeEntryModal() { document.getElementById('entryModal').style.display = 'none'; }
+
+    function saveEntry() {
+        const data = getMonthData();
+        data.days[editingDate] = { ...tempEntry };
+        closeEntryModal();
+        renderCalendar();
+        updateStats();
+    }
+
+    function changeBreak(val) {
+        tempEntry.break = Math.max(0, tempEntry.break + val);
+        document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
+    }
+
+    function togglePaidBreak() {
+        tempEntry.isPaid = !tempEntry.isPaid;
+        document.getElementById('paidBreakToggle').classList.toggle('active');
+    }
+
+    // --- 時薪設定 ---
+    document.getElementById('btnOpenWageModal').onclick = () => {
+        const data = getMonthData();
+        document.getElementById('hourlyWageInput').value = data.wage;
+        document.getElementById('wageNote').textContent = `此設定僅套用於 ${currentYear}年${currentMonth + 1}月`;
+        document.getElementById('wageModal').style.display = 'flex';
+    }
+    function closeWageModal() { document.getElementById('wageModal').style.display = 'none'; }
+    function saveWage() {
+        const data = getMonthData();
+        data.wage = parseFloat(document.getElementById('hourlyWageInput').value) || 0;
+        closeWageModal();
+        updateStats();
+    }
+
+    // --- 滾輪時間選擇器邏輯 (最佳化體驗) ---
+    function initPickers() {
+        const hCol = document.getElementById('hourCol');
+        const mCol = document.getElementById('minCol');
+        for(let i=0; i<24; i++) hCol.innerHTML += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
+        for(let i=0; i<60; i+=5) mCol.innerHTML += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
+        
+        [hCol, mCol].forEach(col => {
+            col.onscroll = () => {
+                const items = col.querySelectorAll('.picker-item');
+                const scrollPos = col.scrollTop + 70;
+                items.forEach(item => {
+                    if(Math.abs(item.offsetTop - scrollPos) < 20) item.classList.add('selected');
+                    else item.classList.remove('selected');
+                });
+            };
+        });
+    }
+
+    function openPicker(type) {
+        pickingType = type;
+        document.getElementById('pickerTitle').textContent = type === 'start' ? '選擇開始時間' : '選擇結束時間';
+        document.getElementById('pickerOverlay').style.display = 'flex';
+        
+        // 預設對齊目前選取的時間
+        const [h, m] = (type === 'start' ? tempEntry.start : tempEntry.end).split(':');
+        const hCol = document.getElementById('hourCol');
+        const mCol = document.getElementById('minCol');
+        
+        // 稍微延遲確保 DOM 已渲染
+        setTimeout(() => {
+            hCol.scrollTop = [...hCol.children].find(el => el.dataset.val === h).offsetTop - 70;
+            const mTarget = [...mCol.children].find(el => parseInt(el.dataset.val) >= parseInt(m)) || mCol.children[0];
+            mCol.scrollTop = mTarget.offsetTop - 70;
+        }, 50);
+    }
+
+    function confirmPicker() {
+        const h = document.getElementById('hourCol').querySelector('.selected').dataset.val;
+        const m = document.getElementById('minCol').querySelector('.selected').dataset.val;
+        const timeStr = `${h}:${m}`;
+        if(pickingType === 'start') {
+            tempEntry.start = timeStr;
+            document.getElementById('startTimeLabel').textContent = timeStr;
+        } else {
+            tempEntry.end = timeStr;
+            document.getElementById('endTimeLabel').textContent = timeStr;
+        }
+        document.getElementById('pickerOverlay').style.display = 'none';
+    }
+
+    // --- 月份導覽 ---
+    document.getElementById('btnPrevMonth').onclick = () => {
+        currentMonth--; if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+        init();
+    };
+    document.getElementById('btnNextMonth').onclick = () => {
+        currentMonth++; if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+        init();
+    };
+    document.getElementById('btnClearMonth').onclick = () => {
+        if(confirm(`確定要清除 ${currentYear}年${currentMonth+1}月的時數紀錄嗎？`)) {
+            getMonthData().days = {};
+            init();
+        }
+    };
+
+    init();
+</script>
+
+</body>
+</html>
