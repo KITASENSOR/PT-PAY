@@ -32,8 +32,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        h2 { text-align: center; color: var(--primary); margin: 5px 0 15px 0; font-size: 1.4em; }
-
         /* 統計結果區塊 */
         .result-box {
             background: #eafaf1;
@@ -84,26 +82,42 @@
         .nav-arrow { background: transparent; border: none; padding: 8px 10px; font-size: 1em; cursor: pointer; color: var(--primary); }
         .calendar-header { font-weight: bold; cursor: pointer; user-select: none; font-size: 0.95em; white-space: nowrap; }
 
-        /* 月曆樣式 - 增加高度以容納多行時間 */
+        /* 月曆樣式 - 調整高度以完美容納 4 行資訊 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .day-name { text-align: center; font-weight: bold; background: var(--primary); color: white; padding: 5px 0; border-radius: 4px; font-size: 0.85em; }
         .calendar-cell {
-            background: #fff; border: 1px solid #bdc3c7; height: 78px; border-radius: 6px;
+            background: #fff; border: 1px solid #bdc3c7; height: 85px; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; padding-top: 3px; cursor: pointer;
             transition: background 0.2s;
         }
         .calendar-cell.has-data { background: #d4efdf; border-color: var(--success); }
         .date-num { font-size: 0.85em; font-weight: bold; margin-bottom: 2px; color: #555; }
         
-        /* 修正顯示格式 */
+        /* 儲存格內部資訊的排版 */
         .cell-info { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .time-range {
             font-size: 0.7em; 
             color: #7f8c8d; 
-            text-align: center; 
             font-weight: bold; 
-            line-height: 1.1;
+            text-align: center;
+            line-height: 1; /* 縮緊行距 */
         }
-        .has-data .cell-info { color: var(--danger); }
+        .time-range .separator {
+            font-size: 0.6em; /* 縮小連接號 */
+            margin: 1px 0; /* 極小的間距 */
+            color: #95a5a6;
+        }
+        .daily-hours {
+            color: var(--danger);
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 3px;
+        }
 
         /* 浮動視窗共用 */
         .modal-overlay {
@@ -173,8 +187,6 @@
 <body>
 
 <div class="container">
-    <h2>PT 薪資計算機</h2>
-    
     <div class="result-box">
         <div class="result-item">
             <div class="result-label">當月總時數</div>
@@ -357,11 +369,19 @@
             cell.className = 'calendar-cell';
             if (data.days[i]) cell.classList.add('has-data');
             
-            // 修正為 09:00 | 15:00 格式
             let infoContent = '';
             if (data.days[i]) {
                 const entry = data.days[i];
-                infoContent = `${entry.start}<br>|<br>${entry.end}`;
+                const dailyH = calculateDiff(entry.start, entry.end, entry.break).toFixed(1);
+                // 緊湊格式顯示：時間區間 + 短連接號 + 當日時數
+                infoContent = `
+                    <div class="time-range">
+                        <div>${entry.start}</div>
+                        <div class="separator">|</div>
+                        <div>${entry.end}</div>
+                    </div>
+                    <div class="daily-hours">${dailyH}h</div>
+                `;
             }
             
             cell.innerHTML = `<div class="date-num">${i}</div><div class="cell-info">${infoContent}</div>`;
