@@ -23,6 +23,9 @@
             margin: 0 auto;
             padding: 10px;
             box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .container {
@@ -30,6 +33,7 @@
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 70px; 
         }
 
         /* 統計結果區塊 */
@@ -80,44 +84,48 @@
             overflow: hidden;
         }
         .nav-arrow { background: transparent; border: none; padding: 8px 10px; font-size: 1em; cursor: pointer; color: var(--primary); }
-        .calendar-header { font-weight: bold; cursor: pointer; user-select: none; font-size: 0.95em; white-space: nowrap; }
+        .calendar-header { font-weight: bold; cursor: pointer; font-size: 0.95em; white-space: nowrap; }
 
-        /* 月曆樣式 - 調整高度以完美容納 4 行資訊 */
+        /* 月曆樣式 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .day-name { text-align: center; font-weight: bold; background: var(--primary); color: white; padding: 5px 0; border-radius: 4px; font-size: 0.85em; }
         .calendar-cell {
             background: #fff; border: 1px solid #bdc3c7; height: 85px; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; padding-top: 3px; cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            position: relative;
         }
         .calendar-cell.has-data { background: #d4efdf; border-color: var(--success); }
-        .date-num { font-size: 0.85em; font-weight: bold; margin-bottom: 2px; color: #555; }
         
-        /* 儲存格內部資訊的排版 */
-        .cell-info { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        .time-range {
-            font-size: 0.7em; 
-            color: #7f8c8d; 
-            font-weight: bold; 
-            text-align: center;
-            line-height: 1; /* 縮緊行距 */
-        }
-        .time-range .separator {
-            font-size: 0.6em; /* 縮小連接號 */
-            margin: 1px 0; /* 極小的間距 */
-            color: #95a5a6;
-        }
-        .daily-hours {
-            color: var(--danger);
-            font-size: 0.8em;
+        /* 國定假日標籤樣式 */
+        .calendar-cell.is-holiday { background: #fdedec; border-color: var(--danger); }
+        .holiday-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.6em;
+            padding: 1px 3px;
+            border-radius: 4px;
             font-weight: bold;
-            margin-top: 3px;
+            pointer-events: none;
         }
+
+        .calendar-cell.selected-batch {
+            box-shadow: 0 0 0 3px var(--secondary) inset;
+            background: #eaf5fa;
+            transform: scale(0.95);
+        }
+
+        .date-num { font-size: 0.85em; font-weight: bold; margin-bottom: 2px; color: #555; pointer-events: none; }
+        
+        /* 儲存格內部資訊排版 */
+        .cell-info { display: flex; flex-direction: column; align-items: center; width: 100%; pointer-events: none; }
+        .time-range { font-size: 0.7em; color: #7f8c8d; font-weight: bold; text-align: center; line-height: 1; }
+        .time-range .separator { font-size: 0.6em; margin: 1px 0; color: #95a5a6; }
+        .daily-hours { color: var(--danger); font-size: 0.8em; font-weight: bold; margin-top: 3px; }
 
         /* 浮動視窗共用 */
         .modal-overlay {
@@ -132,6 +140,15 @@
         
         h3 { text-align: center; margin-top: 0; color: var(--primary); border-bottom: 2px solid #f4f7f6; padding-bottom: 10px; }
 
+        /* 快捷鍵樣式 */
+        .shortcut-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .shortcut-btn {
+            background: #eaf2f8; color: var(--primary); border: 1px solid var(--secondary); 
+            padding: 6px 4px; text-align: center; border-radius: 6px; font-size: 0.8em; 
+            font-weight: bold; cursor: pointer; transition: 0.2s; line-height: 1.3;
+        }
+        .shortcut-btn:active { background: var(--secondary); color: white; }
+
         /* 時間輸入格樣式 */
         .time-input-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
         .time-box {
@@ -143,26 +160,19 @@
         /* 休息時間控制 */
         .control-label { font-weight: bold; font-size: 0.9em; margin-bottom: 8px; display: block; }
         .stepper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
-        .stepper button { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #bdc3c7; background: #eee; font-size: 1.2em; cursor: pointer; }
+        .stepper button { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #bdc3c7; background: #eee; font-size: 1.2em; cursor: pointer; display: flex; justify-content: center; align-items: center; }
         .stepper span { font-size: 1.2em; font-weight: bold; min-width: 60px; text-align: center; }
 
         /* 開關按鈕 (Toggle) */
         .toggle-group { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
-        .toggle-btn {
-            background: #bdc3c7; border: none; width: 50px; height: 26px; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s;
-        }
+        .toggle-btn { background: #bdc3c7; border: none; width: 50px; height: 26px; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
         .toggle-btn::before { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; left: 3px; top: 3px; transition: 0.3s; }
         .toggle-btn.active { background: var(--success); }
         .toggle-btn.active::before { left: 27px; }
 
         /* 滾輪選擇器 */
-        .picker-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: flex-end;
-        }
-        .picker-container {
-            background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box;
-        }
+        .picker-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: flex-end; }
+        .picker-container { background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; }
         .picker-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .picker-body { display: flex; height: 200px; overflow: hidden; position: relative; justify-content: center; }
         .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; scrollbar-width: none; }
@@ -175,13 +185,29 @@
         .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
         .btn-confirm { flex: 1; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-cancel { flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-clear-day { background: transparent !important; color: var(--danger) !important; border: 1px solid var(--danger) !important; margin-left: 10px; width: 45px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;}
+        .btn-clear-day { background: transparent !important; color: var(--danger) !important; border: 1px solid var(--danger) !important; margin-left: 10px; width: 45px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 18px; }
         
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9em; }
         .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; text-align: center; background: white; }
 
         .clear-btn { width: 100%; background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 6px; margin-top: 15px; cursor: pointer; }
+
+        /* 批量操作懸浮列 */
+        .batch-action-bar {
+            display: none; position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.95); color: white; padding: 12px 20px; border-radius: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 1000; align-items: center; justify-content: space-between;
+            width: 85%; max-width: 400px; backdrop-filter: blur(5px); animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 25px; opacity: 1; } }
+        .batch-action-bar span { font-weight: bold; font-size: 1.1em; }
+        .batch-action-bar span b { color: var(--secondary); font-size: 1.2em; }
+        .batch-btns { display: flex; gap: 8px; }
+        .batch-btns button { background: white; border: none; padding: 8px 12px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 0.9em; }
+        .btn-batch-delete { color: var(--danger) !important; }
+        .btn-batch-set { color: var(--primary) !important; }
+        .btn-batch-cancel { background: transparent !important; color: white !important; border: 1px solid white !important; }
     </style>
 </head>
 <body>
@@ -212,10 +238,26 @@
     <button class="clear-btn" id="btnClearMonth">🗑️ 清除本月紀錄</button>
 </div>
 
+<div class="batch-action-bar" id="batchActionBar">
+    <span>已選取 <b id="batchCountDisplay">0</b> 天</span>
+    <div class="batch-btns">
+        <button class="btn-batch-delete" onclick="deleteBatchDays()">🗑️ 刪除</button>
+        <button class="btn-batch-set" onclick="openBatchEntryModal()">✏️ 設定</button>
+        <button class="btn-batch-cancel" onclick="exitBatchMode()">取消</button>
+    </div>
+</div>
+
 <div class="modal-overlay" id="entryModal">
     <div class="modal-content">
         <h3 id="entryTitle">工作紀錄</h3>
         
+        <div class="shortcut-group">
+            <div class="shortcut-btn" onclick="applyShortcut('08:45', '13:45', 0.5)">08:45-13:45<br>(休 0.5h)</div>
+            <div class="shortcut-btn" onclick="applyShortcut('12:45', '17:45', 0.5)">12:45-17:45<br>(休 0.5h)</div>
+            <div class="shortcut-btn" onclick="applyShortcut('11:30', '17:30', 0.5)">11:30-17:30<br>(休 0.5h)</div>
+            <div class="shortcut-btn" onclick="applyShortcut('08:45', '17:45', 1.0)">08:45-17:45<br>(休 1.0h)</div>
+        </div>
+
         <div class="time-input-row">
             <div class="time-box" onclick="openPicker('start')">
                 <label>開始時間</label>
@@ -234,7 +276,7 @@
                 <span id="breakLabel">0.0</span>
                 <button onclick="changeBreak(0.5)">+</button>
             </div>
-            <button id="btnClearDay" class="btn-clear-day" title="清空當日紀錄">🗑️</button>
+            <button id="btnClearDay" class="btn-clear-day" title="清空當日紀錄" style="display:flex; justify-content:center; align-items:center;">🗑️</button>
         </div>
 
         <div class="modal-actions">
@@ -295,9 +337,24 @@
     let currentMonth = new Date().getMonth();
     let allData = JSON.parse(localStorage.getItem('pt_calc_v2')) || {};
 
+    let isBatchMode = false;
+    let selectedDays = new Set();
+    let justEnteredBatch = false;
+
     let editingDate = null;
     let tempEntry = { start: "07:00", end: "11:00", break: 0 };
     let pickingType = 'start';
+
+    // 台灣國定假日清單 (包含固定日期與 2026 農曆指定日)
+    const fixedHolidays = new Set(["01-01", "02-28", "04-04", "04-05", "05-01", "09-28", "10-10", "10-25", "12-25"]);
+    const lunar2026 = new Set(["02-15", "02-16", "02-17", "02-18", "02-19", "06-19", "09-25"]);
+
+    function isNationalHoliday(year, month, day) {
+        const dateStr = `${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        if (fixedHolidays.has(dateStr)) return true;
+        if (year === 2026 && lunar2026.has(dateStr)) return true;
+        return false;
+    }
 
     function init() {
         initPickers();
@@ -327,13 +384,20 @@
     function updateStats() {
         const data = getMonthData();
         let totalH = 0;
+        let totalPay = 0;
+        
         for (let d in data.days) {
             const entry = data.days[d];
-            totalH += calculateDiff(entry.start, entry.end, entry.break);
+            const h = calculateDiff(entry.start, entry.end, entry.break);
+            totalH += h;
+            
+            const isHoliday = isNationalHoliday(currentYear, currentMonth, parseInt(d));
+            totalPay += calculateDailyPay(h, data.wage, isHoliday);
         }
+        
         let roundedTotal = parseFloat(totalH.toFixed(1));
         document.getElementById('totalHours').textContent = roundedTotal.toFixed(1);
-        document.getElementById('totalSalary').textContent = Math.round(roundedTotal * data.wage).toLocaleString();
+        document.getElementById('totalSalary').textContent = Math.round(totalPay).toLocaleString();
         localStorage.setItem('pt_calc_v2', JSON.stringify(allData));
     }
 
@@ -347,6 +411,67 @@
         return Math.max(0, diff);
     }
 
+    // 計算單日薪水 (包含加班費級距與國假雙倍)
+    function calculateDailyPay(hours, baseWage, isHoliday) {
+        let effectiveWage = isHoliday ? baseWage * 2 : baseWage;
+        let pay = 0;
+        if (hours <= 8) {
+            pay = hours * effectiveWage;
+        } else if (hours <= 10) {
+            pay = (8 * effectiveWage) + ((hours - 8) * (effectiveWage * 1.33));
+        } else {
+            pay = (8 * effectiveWage) + (2 * (effectiveWage * 1.33)) + ((hours - 10) * (effectiveWage * 1.66));
+        }
+        return pay;
+    }
+
+    // --- 多選邏輯 ---
+    function enterBatchMode(day) {
+        isBatchMode = true; justEnteredBatch = true;
+        selectedDays.add(day); updateBatchUI(); renderCalendar();
+    }
+    function toggleBatchSelection(day) {
+        if (justEnteredBatch) { justEnteredBatch = false; return; }
+        if (selectedDays.has(day)) {
+            selectedDays.delete(day);
+            if (selectedDays.size === 0) exitBatchMode();
+        } else { selectedDays.add(day); }
+        updateBatchUI(); renderCalendar();
+    }
+    function exitBatchMode() { isBatchMode = false; selectedDays.clear(); document.getElementById('batchActionBar').style.display = 'none'; renderCalendar(); }
+    function updateBatchUI() {
+        const bar = document.getElementById('batchActionBar');
+        if (isBatchMode) { bar.style.display = 'flex'; document.getElementById('batchCountDisplay').textContent = selectedDays.size; } 
+        else { bar.style.display = 'none'; }
+    }
+    function deleteBatchDays() {
+        if(confirm(`確定要清除這 ${selectedDays.size} 天的紀錄嗎？`)) {
+            const data = getMonthData();
+            selectedDays.forEach(d => delete data.days[d]);
+            exitBatchMode(); updateStats();
+        }
+    }
+    function openBatchEntryModal() {
+        tempEntry = { start: "07:00", end: "11:00", break: 0 };
+        document.getElementById('entryTitle').textContent = `批量設定 ${selectedDays.size} 天`;
+        document.getElementById('startTimeLabel').textContent = tempEntry.start;
+        document.getElementById('endTimeLabel').textContent = tempEntry.end;
+        document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
+        document.getElementById('btnClearDay').style.display = 'none'; 
+        document.getElementById('entryModal').style.display = 'flex';
+    }
+
+    // --- 快捷鍵應用 ---
+    function applyShortcut(start, end, breakTime) {
+        tempEntry.start = start;
+        tempEntry.end = end;
+        tempEntry.break = breakTime;
+        document.getElementById('startTimeLabel').textContent = start;
+        document.getElementById('endTimeLabel').textContent = end;
+        document.getElementById('breakLabel').textContent = breakTime.toFixed(1);
+    }
+
+    // --- 月曆繪製 ---
     function renderCalendar() {
         const container = document.getElementById('calendarGrid');
         const display = document.getElementById('monthDisplay');
@@ -367,13 +492,19 @@
         for (let i = 1; i <= daysInMonth; i++) {
             const cell = document.createElement('div');
             cell.className = 'calendar-cell';
+            
+            const isHoliday = isNationalHoliday(currentYear, currentMonth, i);
+            if (isHoliday) cell.classList.add('is-holiday');
+            
+            if (isBatchMode && selectedDays.has(i)) cell.classList.add('selected-batch');
             if (data.days[i]) cell.classList.add('has-data');
             
+            let holidayBadge = isHoliday ? `<div class="holiday-badge">國假</div>` : '';
             let infoContent = '';
+            
             if (data.days[i]) {
                 const entry = data.days[i];
                 const dailyH = calculateDiff(entry.start, entry.end, entry.break).toFixed(1);
-                // 緊湊格式顯示：時間區間 + 短連接號 + 當日時數
                 infoContent = `
                     <div class="time-range">
                         <div>${entry.start}</div>
@@ -384,8 +515,24 @@
                 `;
             }
             
-            cell.innerHTML = `<div class="date-num">${i}</div><div class="cell-info">${infoContent}</div>`;
-            cell.onclick = () => openEntryModal(i);
+            cell.innerHTML = `${holidayBadge}<div class="date-num">${i}</div><div class="cell-info">${infoContent}</div>`;
+            
+            let pressTimer = null;
+            let startY = 0, startX = 0;
+            
+            cell.onpointerdown = (e) => {
+                startY = e.clientY; startX = e.clientX;
+                pressTimer = setTimeout(() => { enterBatchMode(i); }, 500);
+            };
+            cell.onpointermove = (e) => { if (Math.abs(e.clientY - startY) > 10 || Math.abs(e.clientX - startX) > 10) clearTimeout(pressTimer); };
+            cell.onpointerup = (e) => {
+                clearTimeout(pressTimer);
+                if (isBatchMode) { toggleBatchSelection(i); } 
+                else if (Math.abs(e.clientY - startY) <= 10 && Math.abs(e.clientX - startX) <= 10) { openEntryModal(i); }
+            };
+            cell.onpointercancel = () => clearTimeout(pressTimer);
+            cell.oncontextmenu = (e) => e.preventDefault(); 
+            
             container.appendChild(cell);
         }
     }
@@ -399,6 +546,7 @@
         document.getElementById('startTimeLabel').textContent = tempEntry.start;
         document.getElementById('endTimeLabel').textContent = tempEntry.end;
         document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
+        document.getElementById('btnClearDay').style.display = 'flex'; 
         document.getElementById('entryModal').style.display = 'flex';
     }
 
@@ -406,10 +554,13 @@
 
     function saveEntry() {
         const data = getMonthData();
-        data.days[editingDate] = { ...tempEntry };
-        closeEntryModal();
-        renderCalendar();
-        updateStats();
+        if (isBatchMode) {
+            selectedDays.forEach(d => { data.days[d] = { ...tempEntry }; });
+            exitBatchMode();
+        } else {
+            data.days[editingDate] = { ...tempEntry };
+        }
+        closeEntryModal(); renderCalendar(); updateStats();
     }
 
     function changeBreak(val) {
@@ -418,13 +569,11 @@
     }
     
     document.getElementById('btnClearDay').onclick = () => {
-        const data = getMonthData();
-        delete data.days[editingDate];
-        closeEntryModal();
-        renderCalendar();
-        updateStats();
+        const data = getMonthData(); delete data.days[editingDate];
+        closeEntryModal(); renderCalendar(); updateStats();
     };
 
+    // --- 薪資設定 ---
     document.getElementById('btnOpenWageModal').onclick = () => {
         const data = getMonthData();
         document.getElementById('hourlyWageInput').value = data.wage;
@@ -443,13 +592,12 @@
         data.minuteInterval = parseInt(document.getElementById('minuteIntervalSelect').value) || 1;
         data.isPaidBreak = document.getElementById('wagePaidBreakToggle').classList.contains('active');
         renderMinPicker(data.minuteInterval);
-        closeWageModal();
-        renderCalendar();
-        updateStats();
+        closeWageModal(); renderCalendar(); updateStats();
     }
 
     function toggleWagePaidBreak() { document.getElementById('wagePaidBreakToggle').classList.toggle('active'); }
 
+    // --- 滾輪邏輯 ---
     const spacersHtml = '<div class="picker-item spacer"></div><div class="picker-item spacer"></div>';
 
     function initPickers() {
@@ -497,8 +645,7 @@
             hCol.scrollTop = parseInt(h) * 40;
             let mIndex = Math.floor(parseInt(m) / interval);
             mCol.scrollTop = mIndex * 40;
-            hCol.onscroll();
-            mCol.onscroll();
+            hCol.onscroll(); mCol.onscroll();
         }, 10);
     }
 
@@ -521,9 +668,9 @@
         document.getElementById('pickerOverlay').style.display = 'none';
     }
 
-    document.getElementById('btnPrevMonth').onclick = () => { currentMonth--; if(currentMonth < 0) { currentMonth = 11; currentYear--; } init(); };
-    document.getElementById('btnNextMonth').onclick = () => { currentMonth++; if(currentMonth > 11) { currentMonth = 0; currentYear++; } init(); };
-    document.getElementById('btnClearMonth').onclick = () => { if(confirm(`確定要清除時數紀錄嗎？`)) { getMonthData().days = {}; init(); } };
+    document.getElementById('btnPrevMonth').onclick = () => { currentMonth--; if(currentMonth < 0) { currentMonth = 11; currentYear--; } exitBatchMode(); init(); };
+    document.getElementById('btnNextMonth').onclick = () => { currentMonth++; if(currentMonth > 11) { currentMonth = 0; currentYear++; } exitBatchMode(); init(); };
+    document.getElementById('btnClearMonth').onclick = () => { if(confirm(`確定要清除時數紀錄嗎？`)) { getMonthData().days = {}; exitBatchMode(); init(); } };
 
     init();
 </script>
