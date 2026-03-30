@@ -36,6 +36,7 @@
             margin-bottom: 70px;
         }
 
+        /* 統計結果 */
         .result-box {
             background: #eafaf1;
             padding: 12px 10px;
@@ -53,6 +54,7 @@
         .val-hours { color: var(--warning); font-size: 1.25em; }
         .val-pay { color: var(--danger); font-size: 1.25em; }
 
+        /* 頂部導覽 */
         .top-controls {
             display: flex;
             justify-content: space-between;
@@ -84,6 +86,7 @@
         .nav-arrow { background: transparent; border: none; padding: 8px 10px; font-size: 1em; cursor: pointer; color: var(--primary); }
         .calendar-header { font-weight: bold; cursor: pointer; font-size: 0.95em; white-space: nowrap; }
 
+        /* 日曆 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .day-name { text-align: center; font-weight: bold; background: var(--primary); color: white; padding: 5px 0; border-radius: 4px; font-size: 0.85em; }
         .calendar-cell {
@@ -98,13 +101,13 @@
             background: #eaf5fa;
             transform: scale(0.95);
         }
-
         .date-num { font-size: 0.85em; font-weight: bold; margin-bottom: 2px; color: #555; pointer-events: none; }
         .cell-info { display: flex; flex-direction: column; align-items: center; width: 100%; pointer-events: none; }
         .time-range { font-size: 0.7em; color: #7f8c8d; font-weight: bold; text-align: center; line-height: 1; }
         .time-range .separator { font-size: 0.6em; margin: 1px 0; color: #95a5a6; }
         .daily-hours { color: var(--danger); font-size: 0.8em; font-weight: bold; margin-top: 3px; }
 
+        /* 視窗樣式 */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px);
@@ -136,13 +139,12 @@
         .toggle-btn.active { background: var(--success); }
         .toggle-btn.active::before { left: 27px; }
 
+        /* 滾輪 */
         .picker-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: flex-end;
         }
-        .picker-container {
-            background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box;
-        }
+        .picker-container { background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; }
         .picker-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .picker-body { display: flex; height: 200px; overflow: hidden; position: relative; justify-content: center; }
         .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; scrollbar-width: none; }
@@ -161,8 +163,6 @@
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9em; }
         .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; text-align: center; background: white; }
 
-        .clear-btn { width: 100%; background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 6px; margin-top: 15px; cursor: pointer; }
-
         .batch-action-bar {
             display: none; position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: rgba(44, 62, 80, 0.95); color: white; padding: 12px 20px; border-radius: 30px;
@@ -177,6 +177,8 @@
         .btn-batch-delete { color: var(--danger) !important; }
         .btn-batch-set { color: var(--primary) !important; }
         .btn-batch-cancel { background: transparent !important; color: white !important; border: 1px solid white !important; }
+        
+        .clear-btn { width: 100%; background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 6px; margin-top: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -258,7 +260,8 @@
                 <option value="1">1 分鐘</option>
                 <option value="5">5 分鐘</option>
                 <option value="10">10 分鐘</option>
-                <option value="15">15 分鐘</option> <option value="30">30 分鐘 (半小時)</option>
+                <option value="15">15 分鐘</option>
+                <option value="30">30 分鐘 (半小時)</option>
             </select>
         </div>
         <div class="toggle-group" style="margin-bottom: 5px;">
@@ -356,23 +359,17 @@
     }
 
     function toggleBatchSelection(day) {
-        if (justEnteredBatch) {
-            justEnteredBatch = false;
-            return;
-        }
+        if (justEnteredBatch) { justEnteredBatch = false; return; }
         if (selectedDays.has(day)) {
             selectedDays.delete(day);
             if (selectedDays.size === 0) exitBatchMode();
-        } else {
-            selectedDays.add(day);
-        }
+        } else selectedDays.add(day);
         updateBatchUI();
         renderCalendar();
     }
 
     function exitBatchMode() {
-        isBatchMode = false;
-        selectedDays.clear();
+        isBatchMode = false; selectedDays.clear();
         document.getElementById('batchActionBar').style.display = 'none';
         renderCalendar();
     }
@@ -382,9 +379,7 @@
         if (isBatchMode) {
             bar.style.display = 'flex';
             document.getElementById('batchCountDisplay').textContent = selectedDays.size;
-        } else {
-            bar.style.display = 'none';
-        }
+        } else bar.style.display = 'none';
     }
 
     function deleteBatchDays() {
@@ -408,51 +403,30 @@
 
     function renderCalendar() {
         const container = document.getElementById('calendarGrid');
-        const display = document.getElementById('monthDisplay');
-        display.textContent = `${currentYear}年${currentMonth + 1}月`;
-        
+        document.getElementById('monthDisplay').textContent = `${currentYear}年${currentMonth + 1}月`;
         container.innerHTML = `
             <div class="day-name" style="background:var(--danger)">日</div><div class="day-name">一</div>
             <div class="day-name">二</div><div class="day-name">三</div><div class="day-name">四</div>
             <div class="day-name">五</div><div class="day-name" style="background:var(--warning)">六</div>
         `;
-
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         const data = getMonthData();
-
         for (let i = 0; i < firstDay; i++) container.appendChild(document.createElement('div'));
-
         for (let i = 1; i <= daysInMonth; i++) {
             const cell = document.createElement('div');
             cell.className = 'calendar-cell';
             if (isBatchMode && selectedDays.has(i)) cell.classList.add('selected-batch');
             if (data.days[i]) cell.classList.add('has-data');
-            
-            let infoContent = '';
+            let info = '';
             if (data.days[i]) {
                 const entry = data.days[i];
-                const dailyH = calculateDiff(entry.start, entry.end, entry.break).toFixed(1);
-                infoContent = `
-                    <div class="time-range">
-                        <div>${entry.start}</div>
-                        <div class="separator">|</div>
-                        <div>${entry.end}</div>
-                    </div>
-                    <div class="daily-hours">${dailyH}h</div>
-                `;
+                info = `<div class="time-range"><div>${entry.start}</div><div class="separator">|</div><div>${entry.end}</div></div><div class="daily-hours">${calculateDiff(entry.start, entry.end, entry.break).toFixed(1)}h</div>`;
             }
-            cell.innerHTML = `<div class="date-num">${i}</div><div class="cell-info">${infoContent}</div>`;
-            
-            let pressTimer = null;
-            let startY = 0, startX = 0;
-            cell.onpointerdown = (e) => {
-                startY = e.clientY; startX = e.clientX;
-                pressTimer = setTimeout(() => { enterBatchMode(i); }, 500);
-            };
-            cell.onpointermove = (e) => {
-                if (Math.abs(e.clientY - startY) > 10 || Math.abs(e.clientX - startX) > 10) clearTimeout(pressTimer);
-            };
+            cell.innerHTML = `<div class="date-num">${i}</div><div class="cell-info">${info}</div>`;
+            let pressTimer = null, startY = 0, startX = 0;
+            cell.onpointerdown = (e) => { startY = e.clientY; startX = e.clientX; pressTimer = setTimeout(() => enterBatchMode(i), 500); };
+            cell.onpointermove = (e) => { if (Math.abs(e.clientY - startY) > 10 || Math.abs(e.clientX - startX) > 10) clearTimeout(pressTimer); };
             cell.onpointerup = (e) => {
                 clearTimeout(pressTimer);
                 if (isBatchMode) toggleBatchSelection(i);
@@ -481,27 +455,14 @@
 
     function saveEntry() {
         const data = getMonthData();
-        if (isBatchMode) {
-            selectedDays.forEach(d => { data.days[d] = { ...tempEntry }; });
-            exitBatchMode();
-        } else data.days[editingDate] = { ...tempEntry };
-        closeEntryModal();
-        renderCalendar();
-        updateStats();
+        if (isBatchMode) { selectedDays.forEach(d => { data.days[d] = { ...tempEntry }; }); exitBatchMode(); }
+        else data.days[editingDate] = { ...tempEntry };
+        closeEntryModal(); renderCalendar(); updateStats();
     }
 
-    function changeBreak(val) {
-        tempEntry.break = Math.max(0, tempEntry.break + val);
-        document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
-    }
+    function changeBreak(val) { tempEntry.break = Math.max(0, tempEntry.break + val); document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1); }
     
-    document.getElementById('btnClearDay').onclick = () => {
-        const data = getMonthData();
-        delete data.days[editingDate];
-        closeEntryModal();
-        renderCalendar();
-        updateStats();
-    };
+    document.getElementById('btnClearDay').onclick = () => { delete getMonthData().days[editingDate]; closeEntryModal(); renderCalendar(); updateStats(); };
 
     document.getElementById('btnOpenWageModal').onclick = () => {
         const data = getMonthData();
@@ -514,16 +475,13 @@
     }
     
     function closeWageModal() { document.getElementById('wageModal').style.display = 'none'; }
-    
     function saveWage() {
         const data = getMonthData();
         data.wage = parseFloat(document.getElementById('hourlyWageInput').value) || 0;
         data.minuteInterval = parseInt(document.getElementById('minuteIntervalSelect').value) || 1;
         data.isPaidBreak = document.getElementById('wagePaidBreakToggle').classList.contains('active');
         renderMinPicker(data.minuteInterval);
-        closeWageModal();
-        renderCalendar();
-        updateStats();
+        closeWageModal(); renderCalendar(); updateStats();
     }
 
     function toggleWagePaidBreak() { document.getElementById('wagePaidBreakToggle').classList.toggle('active'); }
@@ -534,15 +492,11 @@
         const hCol = document.getElementById('hourCol');
         let hHtml = spacersHtml;
         for(let i=0; i<24; i++) hHtml += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
-        hHtml += spacersHtml;
-        hCol.innerHTML = hHtml;
+        hHtml += spacersHtml; hCol.innerHTML = hHtml;
         hCol.onscroll = () => {
             const items = hCol.querySelectorAll('.picker-item:not(.spacer)');
-            let centerTarget = Math.round(hCol.scrollTop / 40);
-            items.forEach((item, index) => {
-                if (index === centerTarget) item.classList.add('selected');
-                else item.classList.remove('selected');
-            });
+            let target = Math.round(hCol.scrollTop / 40);
+            items.forEach((item, index) => { if (index === target) item.classList.add('selected'); else item.classList.remove('selected'); });
         };
     }
 
@@ -550,15 +504,11 @@
         const mCol = document.getElementById('minCol');
         let mHtml = spacersHtml;
         for(let i=0; i<60; i+=interval) mHtml += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
-        mHtml += spacersHtml;
-        mCol.innerHTML = mHtml;
+        mHtml += spacersHtml; mCol.innerHTML = mHtml;
         mCol.onscroll = () => {
             const items = mCol.querySelectorAll('.picker-item:not(.spacer)');
-            let centerTarget = Math.round(mCol.scrollTop / 40);
-            items.forEach((item, index) => {
-                if (index === centerTarget) item.classList.add('selected');
-                else item.classList.remove('selected');
-            });
+            let target = Math.round(mCol.scrollTop / 40);
+            items.forEach((item, index) => { if (index === target) item.classList.add('selected'); else item.classList.remove('selected'); });
         };
     }
 
@@ -566,42 +516,32 @@
         pickingType = type;
         document.getElementById('pickerTitle').textContent = type === 'start' ? '選擇開始時間' : '選擇結束時間';
         document.getElementById('pickerOverlay').style.display = 'flex';
-        const data = getMonthData();
-        const interval = data.minuteInterval;
+        const data = getMonthData(), interval = data.minuteInterval;
         const [h, m] = (type === 'start' ? tempEntry.start : tempEntry.end).split(':');
-        const hCol = document.getElementById('hourCol');
-        const mCol = document.getElementById('minCol');
+        const hCol = document.getElementById('hourCol'), mCol = document.getElementById('minCol');
         setTimeout(() => {
             hCol.scrollTop = parseInt(h) * 40;
-            let mIndex = Math.floor(parseInt(m) / interval);
-            mCol.scrollTop = mIndex * 40;
-            hCol.onscroll();
-            mCol.onscroll();
+            mCol.scrollTop = Math.floor(parseInt(m) / interval) * 40;
+            hCol.onscroll(); mCol.onscroll();
         }, 10);
     }
 
     function confirmPicker() {
-        const hNode = document.getElementById('hourCol').querySelector('.selected');
-        const mNode = document.getElementById('minCol').querySelector('.selected');
-        const h = hNode ? hNode.dataset.val : "00";
-        const m = mNode ? mNode.dataset.val : "00";
+        const h = document.getElementById('hourCol').querySelector('.selected').dataset.val;
+        const m = document.getElementById('minCol').querySelector('.selected').dataset.val;
         const timeStr = `${h}:${m}`;
         if(pickingType === 'start') {
-            tempEntry.start = timeStr;
-            document.getElementById('startTimeLabel').textContent = timeStr;
+            tempEntry.start = timeStr; document.getElementById('startTimeLabel').textContent = timeStr;
             let endH = (parseInt(h) + 4) % 24;
             tempEntry.end = `${endH.toString().padStart(2,'0')}:${m}`;
             document.getElementById('endTimeLabel').textContent = tempEntry.end;
-        } else {
-            tempEntry.end = timeStr;
-            document.getElementById('endTimeLabel').textContent = timeStr;
-        }
+        } else { tempEntry.end = timeStr; document.getElementById('endTimeLabel').textContent = timeStr; }
         document.getElementById('pickerOverlay').style.display = 'none';
     }
 
     document.getElementById('btnPrevMonth').onclick = () => { currentMonth--; if(currentMonth < 0) { currentMonth = 11; currentYear--; } exitBatchMode(); init(); };
     document.getElementById('btnNextMonth').onclick = () => { currentMonth++; if(currentMonth > 11) { currentMonth = 0; currentYear++; } exitBatchMode(); init(); };
-    document.getElementById('btnClearMonth').onclick = () => { if(confirm(`確定要清除時數紀錄嗎？`)) { getMonthData().days = {}; exitBatchMode(); init(); } };
+    document.getElementById('btnClearMonth').onclick = () => { if(confirm(`確定要清除本月時數紀錄嗎？`)) { getMonthData().days = {}; exitBatchMode(); init(); } };
 
     init();
 </script>
