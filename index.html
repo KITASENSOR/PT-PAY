@@ -99,29 +99,15 @@
         .calendar-cell.is-holiday.has-data { background: #fdf5d3; border-color: var(--success); }
         .calendar-cell.selected-batch { box-shadow: 0 0 0 3px var(--secondary) inset; transform: scale(0.95); }
 
-        /* 日期標題列：靠左對齊 */
         .date-header {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            width: 100%;
-            padding: 3px 0 0 5px;
-            box-sizing: border-box;
-            margin-bottom: 2px;
+            display: flex; align-items: center; justify-content: flex-start;
+            width: 100%; padding: 3px 0 0 5px; box-sizing: border-box; margin-bottom: 2px;
         }
         .date-num { font-size: 0.85em; font-weight: bold; color: #555; pointer-events: none; }
-        /* 國定假日的日期標紅 */
         .is-holiday .date-num { color: var(--danger); }
-        /* 國字標籤 */
         .hol-icon {
-            font-size: 0.65em;
-            background: var(--danger);
-            color: white;
-            padding: 1px 3px;
-            border-radius: 3px;
-            margin-left: 4px;
-            pointer-events: none;
-            line-height: 1;
+            font-size: 0.65em; background: var(--danger); color: white; padding: 1px 3px;
+            border-radius: 3px; margin-left: 4px; pointer-events: none; line-height: 1;
         }
         
         .cell-info { display: flex; flex-direction: column; align-items: center; width: 100%; pointer-events: none; }
@@ -136,6 +122,7 @@
         .modal-content {
             background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 340px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.2s ease-out;
+            max-height: 90vh; overflow-y: auto; /* 讓內容過長時可以滾動 */
         }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         h3 { text-align: center; margin-top: 0; color: var(--primary); border-bottom: 2px solid #f4f7f6; padding-bottom: 10px; font-size: 1.1em; }
@@ -163,6 +150,32 @@
         .toggle-btn.active { background: var(--success); }
         .toggle-btn.active::before { left: 27px; }
 
+        /* 假日管理區塊樣式 */
+        .holiday-manager {
+            background: #fdfaf0; border: 1px solid #f1c40f; border-radius: 8px; padding: 12px; margin-bottom: 15px;
+        }
+        .holiday-manager h4 { margin: 0 0 10px 0; color: var(--warning); font-size: 0.95em; text-align: center; }
+        .holiday-list {
+            max-height: 120px; overflow-y: auto; margin-bottom: 10px;
+            border: 1px solid #eee; background: white; border-radius: 6px; padding: 5px;
+        }
+        .holiday-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 10px; border-bottom: 1px solid #f4f7f6; font-size: 0.9em;
+        }
+        .holiday-item:last-child { border-bottom: none; }
+        .holiday-item span { font-weight: bold; color: var(--primary); }
+        .holiday-item button {
+            background: transparent; color: var(--danger); border: none; font-size: 1.1em; cursor: pointer; padding: 0 5px;
+        }
+        .add-holiday-row { display: flex; gap: 5px; }
+        .add-holiday-row input[type="date"] {
+            flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.9em;
+        }
+        .add-holiday-row button {
+            background: var(--warning); color: white; border: none; border-radius: 6px; padding: 0 15px; font-weight: bold; cursor: pointer;
+        }
+
         .picker-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: flex-end; }
         .picker-container { background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box; }
         .picker-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
@@ -181,7 +194,7 @@
         
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9em; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; text-align: center; background: white; }
+        .form-group input:not([type="date"]), .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; text-align: center; background: white; }
         .clear-btn { width: 100%; background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 6px; margin-top: 15px; cursor: pointer; }
 
         .batch-action-bar {
@@ -199,7 +212,6 @@
         .btn-batch-set { color: var(--primary) !important; }
         .btn-batch-cancel { background: transparent !important; color: white !important; border: 1px solid white !important; }
 
-        /* 卡片選擇器相關 */
         .year-selector { display: flex; justify-content: space-between; align-items: center; background: #ecf0f1; padding: 8px 15px; border-radius: 8px; margin-bottom: 15px; }
         .year-selector button { background: #bdc3c7; border: none; border-radius: 4px; width: 35px; height: 35px; font-size: 18px; cursor: pointer; color: #2c3e50; }
         .year-selector span { font-size: 1.2em; font-weight: bold; color: var(--primary); }
@@ -267,13 +279,18 @@
         </div>
 
         <label class="control-label">休息時間 (小時)</label>
-        <div class="stepper" style="justify-content: space-between; margin-bottom: 5px;">
+        <div class="stepper" style="justify-content: space-between; margin-bottom: 15px;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button onclick="changeBreak(-0.5)">-</button>
                 <span id="breakLabel">0.0</span>
                 <button onclick="changeBreak(0.5)">+</button>
             </div>
             <button id="btnClearDay" class="btn-clear-day" title="清空當日紀錄" style="display:flex; justify-content:center; align-items:center;">🗑️</button>
+        </div>
+
+        <div class="toggle-group" style="margin-bottom: 5px;">
+            <span style="font-weight:bold; font-size:0.9em; color:#e74c3c;">⛩️ 標記為國定假日<br><span style="font-size:0.8em; color:#7f8c8d; font-weight:normal;">(當日強制雙倍薪資)</span></span>
+            <button class="toggle-btn" id="holidayToggle" onclick="toggleHoliday()"></button>
         </div>
 
         <div class="modal-actions">
@@ -287,10 +304,12 @@
     <div class="modal-content">
         <h3>時薪與設定</h3>
         <p style="text-align:center; font-size:0.85em; color:var(--warning);" id="wageNote"></p>
+        
         <div class="form-group">
             <label>時薪 (元)</label>
             <input type="number" id="hourlyWageInput" placeholder="請輸入時薪">
         </div>
+        
         <div class="form-group">
             <label>時間選擇級距</label>
             <select id="minuteIntervalSelect">
@@ -301,10 +320,22 @@
                 <option value="30">30 分鐘 (半小時)</option>
             </select>
         </div>
-        <div class="toggle-group" style="margin-bottom: 5px;">
+        
+        <div class="toggle-group" style="margin-bottom: 15px;">
             <span style="font-weight:bold; font-size:0.9em; color:#555;">休息時間計薪</span>
             <button class="toggle-btn" id="wagePaidBreakToggle" onclick="toggleWagePaidBreak()"></button>
         </div>
+
+        <div class="holiday-manager">
+            <h4>⛩️ 國定假日管理</h4>
+            <div class="holiday-list" id="holidayListContainer">
+                </div>
+            <div class="add-holiday-row">
+                <input type="date" id="newHolidayDate">
+                <button onclick="addCustomHoliday()">新增</button>
+            </div>
+        </div>
+
         <div class="modal-actions">
             <button class="btn-cancel" onclick="closeWageModal()">取消</button>
             <button class="btn-confirm" onclick="saveWage()">儲存</button>
@@ -345,33 +376,37 @@
 <script>
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
-    let allData = JSON.parse(localStorage.getItem('pt_calc_v3')) || {};
+    
+    // 將自訂假日清單獨立存於 localStorage
+    let customHolidays = JSON.parse(localStorage.getItem('pt_calc_holidays')) || [];
+    let allData = JSON.parse(localStorage.getItem('pt_calc_v5')) || {};
 
     let isBatchMode = false;
     let selectedDays = new Set();
     let justEnteredBatch = false;
 
     let editingDate = null;
-    let tempEntry = { start: "07:00", end: "11:00", break: 0 };
+    let tempEntry = { start: "07:00", end: "11:00", break: 0, isHol: null }; // isHol: null 代表跟隨全域設定
     let pickingType = 'start';
     
     let tempSelectYear = currentYear;
     let tempSelectMonth = currentMonth;
 
-    const holidays2026 = [
-        "2026/01/01",
-        "2026/02/17", "2026/02/18", "2026/02/19", "2026/02/20", "2026/02/21", "2026/02/22",
-        "2026/02/28",
-        "2026/04/04", "2026/04/05",
-        "2026/05/01",
-        "2026/06/19",
-        "2026/09/25",
-        "2026/10/10"
-    ];
-
-    function isHoliday(year, month, day) {
+    // 檢查某天是否在自訂假日清單中
+    function isCustomHoliday(year, month, day) {
         const dateStr = `${year}/${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
-        return holidays2026.includes(dateStr);
+        return customHolidays.includes(dateStr);
+    }
+
+    // 最終判斷該日是否為國定假日 (單日手動設定優先 > 自訂假日清單)
+    function checkIsHoliday(year, month, day) {
+        const data = getMonthData();
+        // 如果單日有手動切換過開關，以此為準
+        if (data.days[day] && data.days[day].isHol !== undefined && data.days[day].isHol !== null) {
+            return data.days[day].isHol;
+        }
+        // 否則依照全域的自訂假日清單
+        return isCustomHoliday(year, month, day);
     }
 
     function init() {
@@ -392,7 +427,7 @@
             allData[key] = {
                 wage: allData[prevKey] ? allData[prevKey].wage : 190,
                 isPaidBreak: allData[prevKey] ? allData[prevKey].isPaidBreak : false,
-                minuteInterval: allData[prevKey] ? allData[prevKey].minuteInterval : 1,
+                minuteInterval: allData[prevKey] ? allData[prevKey].minuteInterval : 15,
                 days: {}
             };
         }
@@ -408,14 +443,14 @@
             const entry = data.days[d];
             const h = calculateDiff(entry.start, entry.end, entry.break);
             totalH += h;
-            const isHol = isHoliday(currentYear, currentMonth, parseInt(d));
+            const isHol = checkIsHoliday(currentYear, currentMonth, parseInt(d));
             totalPay += calculateDailyPay(h, data.wage, isHol);
         }
         
         let roundedTotal = parseFloat(totalH.toFixed(1));
         document.getElementById('totalHours').textContent = roundedTotal.toFixed(1);
         document.getElementById('totalSalary').textContent = Math.round(totalPay).toLocaleString();
-        localStorage.setItem('pt_calc_v3', JSON.stringify(allData));
+        localStorage.setItem('pt_calc_v5', JSON.stringify(allData));
     }
 
     function calculateDiff(start, end, breakH) {
@@ -443,20 +478,15 @@
     }
 
     function applyShortcut(start, end, breakH) {
-        tempEntry.start = start;
-        tempEntry.end = end;
-        tempEntry.break = breakH;
+        tempEntry.start = start; tempEntry.end = end; tempEntry.break = breakH;
         document.getElementById('startTimeLabel').textContent = start;
         document.getElementById('endTimeLabel').textContent = end;
         document.getElementById('breakLabel').textContent = breakH.toFixed(1);
     }
 
     function enterBatchMode(day) {
-        isBatchMode = true;
-        justEnteredBatch = true;
-        selectedDays.add(day);
-        updateBatchUI();
-        renderCalendar();
+        isBatchMode = true; justEnteredBatch = true; selectedDays.add(day);
+        updateBatchUI(); renderCalendar();
     }
 
     function toggleBatchSelection(day) {
@@ -465,8 +495,7 @@
             selectedDays.delete(day);
             if (selectedDays.size === 0) exitBatchMode();
         } else selectedDays.add(day);
-        updateBatchUI();
-        renderCalendar();
+        updateBatchUI(); renderCalendar();
     }
 
     function exitBatchMode() {
@@ -477,27 +506,26 @@
 
     function updateBatchUI() {
         const bar = document.getElementById('batchActionBar');
-        if (isBatchMode) {
-            bar.style.display = 'flex';
-            document.getElementById('batchCountDisplay').textContent = selectedDays.size;
-        } else bar.style.display = 'none';
+        if (isBatchMode) { bar.style.display = 'flex'; document.getElementById('batchCountDisplay').textContent = selectedDays.size; } 
+        else bar.style.display = 'none';
     }
 
     function deleteBatchDays() {
         if(confirm(`確定要清除這 ${selectedDays.size} 天的紀錄嗎？`)) {
             const data = getMonthData();
             selectedDays.forEach(d => delete data.days[d]);
-            exitBatchMode();
-            updateStats();
+            exitBatchMode(); updateStats();
         }
     }
 
     function openBatchEntryModal() {
-        tempEntry = { start: "07:00", end: "11:00", break: 0 };
+        tempEntry = { start: "07:00", end: "11:00", break: 0, isHol: null };
         document.getElementById('entryTitle').textContent = `批量設定 ${selectedDays.size} 天`;
         document.getElementById('startTimeLabel').textContent = tempEntry.start;
         document.getElementById('endTimeLabel').textContent = tempEntry.end;
         document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
+        
+        document.getElementById('holidayToggle').classList.remove('active');
         document.getElementById('btnClearDay').style.display = 'none';
         document.getElementById('entryModal').style.display = 'flex';
     }
@@ -523,7 +551,7 @@
             const cell = document.createElement('div');
             cell.className = 'calendar-cell';
             
-            const isHol = isHoliday(currentYear, currentMonth, i);
+            const isHol = checkIsHoliday(currentYear, currentMonth, i);
             if (isHol) cell.classList.add('is-holiday');
             if (isBatchMode && selectedDays.has(i)) cell.classList.add('selected-batch');
             if (data.days[i]) cell.classList.add('has-data');
@@ -542,7 +570,6 @@
                 `;
             }
             
-            // 靠左顯示日期與國字標籤
             const holLabel = isHol ? `<span class="hol-icon">國</span>` : '';
             cell.innerHTML = `
                 <div class="date-header">
@@ -568,16 +595,23 @@
     function openEntryModal(day) {
         editingDate = day;
         const data = getMonthData();
-        const entry = data.days[day] || { start: "07:00", end: "11:00", break: 0 };
+        const entry = data.days[day] || { start: "07:00", end: "11:00", break: 0, isHol: null };
         tempEntry = { ...entry };
+        
+        // 判斷當日 UI 開關狀態
+        const isHolUI = checkIsHoliday(currentYear, currentMonth, day);
         
         const displayMonth = String(currentMonth + 1).padStart(2, '0');
         const displayDay = String(day).padStart(2, '0');
-        document.getElementById('entryTitle').textContent = `${currentYear}/${displayMonth}/${displayDay} 工作紀錄`;
+        document.getElementById('entryTitle').textContent = `${currentYear}/${displayMonth}/${displayDay}`;
         
         document.getElementById('startTimeLabel').textContent = tempEntry.start;
         document.getElementById('endTimeLabel').textContent = tempEntry.end;
         document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1);
+        
+        const toggle = document.getElementById('holidayToggle');
+        isHolUI ? toggle.classList.add('active') : toggle.classList.remove('active');
+
         document.getElementById('btnClearDay').style.display = 'flex';
         document.getElementById('entryModal').style.display = 'flex';
     }
@@ -586,14 +620,70 @@
 
     function saveEntry() {
         const data = getMonthData();
-        if (isBatchMode) { selectedDays.forEach(d => { data.days[d] = { ...tempEntry }; }); exitBatchMode(); }
-        else data.days[editingDate] = { ...tempEntry };
+        if (isBatchMode) { 
+            selectedDays.forEach(d => { data.days[d] = { ...tempEntry }; }); 
+            exitBatchMode(); 
+        }
+        else {
+            data.days[editingDate] = { ...tempEntry }; 
+        }
         closeEntryModal(); renderCalendar(); updateStats();
     }
 
     function changeBreak(val) { tempEntry.break = Math.max(0, tempEntry.break + val); document.getElementById('breakLabel').textContent = tempEntry.break.toFixed(1); }
     
+    function toggleHoliday() { 
+        const toggle = document.getElementById('holidayToggle');
+        toggle.classList.toggle('active');
+        tempEntry.isHol = toggle.classList.contains('active');
+    }
+    
     document.getElementById('btnClearDay').onclick = () => { delete getMonthData().days[editingDate]; closeEntryModal(); renderCalendar(); updateStats(); };
+
+    // --- 假日管理介面邏輯 ---
+    function renderHolidayList() {
+        const container = document.getElementById('holidayListContainer');
+        container.innerHTML = '';
+        
+        // 排序假日清單
+        customHolidays.sort((a, b) => new Date(a) - new Date(b));
+        
+        if (customHolidays.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#95a5a6; padding:10px 0; font-size:0.9em;">目前無設定假日</div>';
+            return;
+        }
+
+        customHolidays.forEach((dateStr, index) => {
+            const item = document.createElement('div');
+            item.className = 'holiday-item';
+            item.innerHTML = `
+                <span>${dateStr}</span>
+                <button onclick="removeCustomHoliday(${index})">✖</button>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function addCustomHoliday() {
+        const input = document.getElementById('newHolidayDate');
+        if (!input.value) return;
+        
+        // 將 YYYY-MM-DD 轉為 YYYY/MM/DD
+        const dateStr = input.value.replace(/-/g, '/');
+        
+        if (!customHolidays.includes(dateStr)) {
+            customHolidays.push(dateStr);
+            localStorage.setItem('pt_calc_holidays', JSON.stringify(customHolidays));
+            renderHolidayList();
+            input.value = '';
+        }
+    }
+
+    function removeCustomHoliday(index) {
+        customHolidays.splice(index, 1);
+        localStorage.setItem('pt_calc_holidays', JSON.stringify(customHolidays));
+        renderHolidayList();
+    }
 
     document.getElementById('btnOpenWageModal').onclick = () => {
         const data = getMonthData();
@@ -605,10 +695,13 @@
         
         const toggle = document.getElementById('wagePaidBreakToggle');
         data.isPaidBreak ? toggle.classList.add('active') : toggle.classList.remove('active');
+        
+        renderHolidayList(); // 渲染假日清單
         document.getElementById('wageModal').style.display = 'flex';
     }
     
     function closeWageModal() { document.getElementById('wageModal').style.display = 'none'; }
+    
     function saveWage() {
         const data = getMonthData();
         data.wage = parseFloat(document.getElementById('hourlyWageInput').value) || 0;
@@ -622,10 +715,8 @@
 
     // --- 日期選擇器相關 ---
     document.getElementById('monthDisplay').onclick = () => {
-        tempSelectYear = currentYear;
-        tempSelectMonth = currentMonth;
-        renderMonthCards();
-        document.getElementById('dateModal').style.display = 'flex';
+        tempSelectYear = currentYear; tempSelectMonth = currentMonth;
+        renderMonthCards(); document.getElementById('dateModal').style.display = 'flex';
     };
 
     function closeDateModal() { document.getElementById('dateModal').style.display = 'none'; }
@@ -648,11 +739,8 @@
     document.getElementById('btnNextYear').onclick = () => { tempSelectYear++; renderMonthCards(); };
 
     function confirmDate() {
-        currentYear = tempSelectYear;
-        currentMonth = tempSelectMonth;
-        closeDateModal();
-        exitBatchMode();
-        init();
+        currentYear = tempSelectYear; currentMonth = tempSelectMonth;
+        closeDateModal(); exitBatchMode(); init();
     }
 
     // --- 滾輪選擇器 ---
