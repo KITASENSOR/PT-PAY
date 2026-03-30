@@ -133,25 +133,55 @@
         /* 滾輪選擇器 sub-modal */
         .picker-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.3); z-index: 1100; justify-content: center; align-items: flex-end;
+            background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: flex-end;
         }
         .picker-container {
             background: #fff; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box;
         }
         .picker-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .picker-body { display: flex; height: 180px; overflow: hidden; position: relative; justify-content: center; }
-        .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; scrollbar-width: none; }
+        
+        /* 滾輪核心 CSS 修正與最佳化 */
+        .picker-body { 
+            display: flex; 
+            height: 200px; /* 剛好顯示 5 個 40px 的項目 */
+            overflow: hidden; 
+            position: relative; 
+            justify-content: center; 
+        }
+        .picker-col { 
+            flex: 1; 
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory; 
+            text-align: center; 
+            scrollbar-width: none; 
+        }
         .picker-col::-webkit-scrollbar { display: none; }
-        .picker-item { height: 40px; line-height: 40px; font-size: 1.2em; scroll-snap-align: center; color: #bdc3c7; }
+        .picker-item { 
+            height: 40px; 
+            line-height: 40px; 
+            font-size: 1.2em; 
+            scroll-snap-align: center; 
+            color: #bdc3c7; 
+            transition: color 0.1s, font-size 0.1s;
+        }
+        .picker-item.spacer { pointer-events: none; }
         .picker-item.selected { color: var(--primary); font-weight: bold; font-size: 1.4em; }
+        
         .picker-highlight {
-            position: absolute; top: 70px; left: 0; width: 100%; height: 40px; 
-            border-top: 1px solid #eee; border-bottom: 1px solid #eee; pointer-events: none;
+            position: absolute; 
+            top: 80px; /* 置中的亮框 (40px * 2) */
+            left: 0; 
+            width: 100%; 
+            height: 40px; 
+            border-top: 1px solid #ccc; 
+            border-bottom: 1px solid #ccc; 
+            pointer-events: none;
         }
 
         .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
         .btn-confirm { flex: 1; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-cancel { flex: 1; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-clear-day { background: transparent !important; color: var(--danger) !important; border: 1px solid var(--danger) !important; margin-left: 10px; width: 45px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;}
         
         .form-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1.1em; box-sizing: border-box; text-align: center; }
 
@@ -190,24 +220,27 @@
 
 <div class="modal-overlay" id="entryModal">
     <div class="modal-content">
-        <h3 id="entryTitle">3/30 工作紀錄</h3>
+        <h3 id="entryTitle">工作紀錄</h3>
         
         <div class="time-input-row">
             <div class="time-box" onclick="openPicker('start')">
                 <label>開始時間</label>
-                <span id="startTimeLabel">09:00</span>
+                <span id="startTimeLabel">07:00</span>
             </div>
             <div class="time-box" onclick="openPicker('end')">
                 <label>結束時間</label>
-                <span id="endTimeLabel">18:00</span>
+                <span id="endTimeLabel">11:00</span>
             </div>
         </div>
 
         <label class="control-label">休息時間 (小時)</label>
-        <div class="stepper">
-            <button onclick="changeBreak(-0.5)">-</button>
-            <span id="breakLabel">0.0</span>
-            <button onclick="changeBreak(0.5)">+</button>
+        <div class="stepper" style="justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button onclick="changeBreak(-0.5)">-</button>
+                <span id="breakLabel">0.0</span>
+                <button onclick="changeBreak(0.5)">+</button>
+            </div>
+            <button id="btnClearDay" class="btn-clear-day" title="清空當日紀錄">🗑️</button>
         </div>
 
         <div class="toggle-group">
@@ -239,8 +272,8 @@
 <div class="picker-overlay" id="pickerOverlay">
     <div class="picker-container">
         <div class="picker-header">
-            <span id="pickerTitle" style="font-weight:bold;">選擇時間</span>
-            <span style="color:var(--secondary); font-weight:bold; cursor:pointer;" onclick="confirmPicker()">完成</span>
+            <span id="pickerTitle" style="font-weight:bold; font-size:1.1em; color:var(--primary);">選擇時間</span>
+            <span style="color:var(--secondary); font-weight:bold; font-size:1.1em; cursor:pointer;" onclick="confirmPicker()">完成</span>
         </div>
         <div class="picker-body">
             <div class="picker-highlight"></div>
@@ -254,10 +287,10 @@
     // --- 狀態管理 ---
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
-    let allData = JSON.parse(localStorage.getItem('pt_calc_v1')) || {};
+    let allData = JSON.parse(localStorage.getItem('pt_calc_v2')) || {};
 
     let editingDate = null;
-    let tempEntry = { start: "09:00", end: "18:00", break: 0, isPaid: false };
+    let tempEntry = { start: "07:00", end: "11:00", break: 0, isPaid: false };
     let pickingType = 'start';
 
     // --- 初始化 ---
@@ -272,7 +305,6 @@
     function getMonthData() {
         const key = getMonthKey();
         if (!allData[key]) {
-            // 最佳化：自動抓取上個月時薪
             let pM = currentMonth - 1, pY = currentYear;
             if(pM < 0) { pM = 11; pY--; }
             const prevKey = `${pY}-${pM}`;
@@ -295,7 +327,7 @@
         }
         document.getElementById('totalHours').textContent = totalH;
         document.getElementById('totalSalary').textContent = Math.round(totalH * data.wage).toLocaleString();
-        localStorage.setItem('pt_calc_v1', JSON.stringify(allData));
+        localStorage.setItem('pt_calc_v2', JSON.stringify(allData));
     }
 
     function calculateDiff(start, end, breakH, isPaid) {
@@ -339,7 +371,8 @@
     function openEntryModal(day) {
         editingDate = day;
         const data = getMonthData();
-        const entry = data.days[day] || { start: "09:00", end: "18:00", break: 0, isPaid: false };
+        // 預設從 07:00 到 11:00
+        const entry = data.days[day] || { start: "07:00", end: "11:00", break: 0, isPaid: false };
         tempEntry = { ...entry };
         
         document.getElementById('entryTitle').textContent = `${currentMonth+1}/${day} 工作紀錄`;
@@ -372,6 +405,15 @@
         tempEntry.isPaid = !tempEntry.isPaid;
         document.getElementById('paidBreakToggle').classList.toggle('active');
     }
+    
+    // 單日清除邏輯
+    document.getElementById('btnClearDay').onclick = () => {
+        const data = getMonthData();
+        delete data.days[editingDate];
+        closeEntryModal();
+        renderCalendar();
+        updateStats();
+    };
 
     // --- 時薪設定 ---
     document.getElementById('btnOpenWageModal').onclick = () => {
@@ -388,19 +430,29 @@
         updateStats();
     }
 
-    // --- 滾輪時間選擇器邏輯 (最佳化體驗) ---
+    // --- 滾輪時間選擇器邏輯 ---
     function initPickers() {
         const hCol = document.getElementById('hourCol');
         const mCol = document.getElementById('minCol');
-        for(let i=0; i<24; i++) hCol.innerHTML += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
-        for(let i=0; i<60; i+=5) mCol.innerHTML += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
+        const spacers = '<div class="picker-item spacer"></div><div class="picker-item spacer"></div>'; // 上下各兩個隱形區塊
         
+        let hHtml = spacers;
+        for(let i=0; i<24; i++) hHtml += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
+        hHtml += spacers;
+        hCol.innerHTML = hHtml;
+
+        let mHtml = spacers;
+        for(let i=0; i<60; i++) mHtml += `<div class="picker-item" data-val="${i.toString().padStart(2,'0')}">${i.toString().padStart(2,'0')}</div>`;
+        mHtml += spacers;
+        mCol.innerHTML = mHtml;
+
         [hCol, mCol].forEach(col => {
             col.onscroll = () => {
-                const items = col.querySelectorAll('.picker-item');
-                const scrollPos = col.scrollTop + 70;
-                items.forEach(item => {
-                    if(Math.abs(item.offsetTop - scrollPos) < 20) item.classList.add('selected');
+                // 利用 scrollTop 算出正中央的元素 (每個項目 40px)
+                const items = col.querySelectorAll('.picker-item:not(.spacer)');
+                let centerTarget = Math.round(col.scrollTop / 40);
+                items.forEach((item, index) => {
+                    if (index === centerTarget) item.classList.add('selected');
                     else item.classList.remove('selected');
                 });
             };
@@ -412,26 +464,37 @@
         document.getElementById('pickerTitle').textContent = type === 'start' ? '選擇開始時間' : '選擇結束時間';
         document.getElementById('pickerOverlay').style.display = 'flex';
         
-        // 預設對齊目前選取的時間
         const [h, m] = (type === 'start' ? tempEntry.start : tempEntry.end).split(':');
         const hCol = document.getElementById('hourCol');
         const mCol = document.getElementById('minCol');
         
-        // 稍微延遲確保 DOM 已渲染
+        // 延遲以確保視窗顯示後再移動捲軸
         setTimeout(() => {
-            hCol.scrollTop = [...hCol.children].find(el => el.dataset.val === h).offsetTop - 70;
-            const mTarget = [...mCol.children].find(el => parseInt(el.dataset.val) >= parseInt(m)) || mCol.children[0];
-            mCol.scrollTop = mTarget.offsetTop - 70;
-        }, 50);
+            hCol.scrollTop = parseInt(h) * 40;
+            mCol.scrollTop = parseInt(m) * 40;
+            // 手動觸發一次 scroll 事件，解決不滑動就無法儲存的問題
+            hCol.onscroll();
+            mCol.onscroll();
+        }, 10);
     }
 
     function confirmPicker() {
-        const h = document.getElementById('hourCol').querySelector('.selected').dataset.val;
-        const m = document.getElementById('minCol').querySelector('.selected').dataset.val;
+        const hNode = document.getElementById('hourCol').querySelector('.selected');
+        const mNode = document.getElementById('minCol').querySelector('.selected');
+        
+        // 防呆：確保一定抓得到數值
+        const h = hNode ? hNode.dataset.val : "00";
+        const m = mNode ? mNode.dataset.val : "00";
         const timeStr = `${h}:${m}`;
+        
         if(pickingType === 'start') {
             tempEntry.start = timeStr;
             document.getElementById('startTimeLabel').textContent = timeStr;
+            
+            // 自動連動：結束時間 = 開始時間 + 4 小時
+            let endH = (parseInt(h) + 4) % 24;
+            tempEntry.end = `${endH.toString().padStart(2,'0')}:${m}`;
+            document.getElementById('endTimeLabel').textContent = tempEntry.end;
         } else {
             tempEntry.end = timeStr;
             document.getElementById('endTimeLabel').textContent = timeStr;
