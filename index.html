@@ -88,18 +88,41 @@
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .day-name { text-align: center; font-weight: bold; background: var(--primary); color: white; padding: 5px 0; border-radius: 4px; font-size: 0.85em; }
+        
         .calendar-cell {
             background: #fff; border: 1px solid #bdc3c7; height: 95px; border-radius: 6px;
-            display: flex; flex-direction: column; align-items: center; padding-top: 3px; cursor: pointer;
-            transition: all 0.2s; touch-action: manipulation;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+            transition: all 0.2s; touch-action: manipulation; overflow: hidden;
         }
         .calendar-cell.has-data { background: #d4efdf; border-color: var(--success); }
         .calendar-cell.is-holiday { background: var(--hol-bg); border-color: var(--hol-border); }
         .calendar-cell.is-holiday.has-data { background: #fdf5d3; border-color: var(--success); }
         .calendar-cell.selected-batch { box-shadow: 0 0 0 3px var(--secondary) inset; transform: scale(0.95); }
 
-        .date-num { font-size: 0.85em; font-weight: bold; margin-bottom: 1px; color: #555; pointer-events: none; }
-        .hol-label { font-size: 0.6em; background: var(--danger); color: white; padding: 1px 3px; border-radius: 3px; margin-bottom: 2px; line-height: 1; pointer-events: none; }
+        /* 日期標題列：靠左對齊 */
+        .date-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            padding: 3px 0 0 5px;
+            box-sizing: border-box;
+            margin-bottom: 2px;
+        }
+        .date-num { font-size: 0.85em; font-weight: bold; color: #555; pointer-events: none; }
+        /* 國定假日的日期標紅 */
+        .is-holiday .date-num { color: var(--danger); }
+        /* 國字標籤 */
+        .hol-icon {
+            font-size: 0.65em;
+            background: var(--danger);
+            color: white;
+            padding: 1px 3px;
+            border-radius: 3px;
+            margin-left: 4px;
+            pointer-events: none;
+            line-height: 1;
+        }
         
         .cell-info { display: flex; flex-direction: column; align-items: center; width: 100%; pointer-events: none; }
         .time-range { font-size: 0.7em; color: #7f8c8d; font-weight: bold; text-align: center; line-height: 1; }
@@ -117,9 +140,7 @@
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         h3 { text-align: center; margin-top: 0; color: var(--primary); border-bottom: 2px solid #f4f7f6; padding-bottom: 10px; font-size: 1.1em; }
 
-        .shortcuts-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;
-        }
+        .shortcuts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .shortcuts-grid button {
             background: #ecf0f1; border: 1px solid #bdc3c7; padding: 8px 5px; border-radius: 6px;
             font-size: 0.8em; font-weight: bold; color: var(--primary); cursor: pointer; transition: 0.2s;
@@ -521,8 +542,14 @@
                 `;
             }
             
-            const holLabel = isHol ? `<div class="hol-label">國假</div>` : '';
-            cell.innerHTML = `<div class="date-num">${i}</div>${holLabel}<div class="cell-info">${infoContent}</div>`;
+            // 靠左顯示日期與國字標籤
+            const holLabel = isHol ? `<span class="hol-icon">國</span>` : '';
+            cell.innerHTML = `
+                <div class="date-header">
+                    <span class="date-num">${i}</span>${holLabel}
+                </div>
+                <div class="cell-info">${infoContent}</div>
+            `;
             
             let pressTimer = null, startY = 0, startX = 0;
             cell.onpointerdown = (e) => { startY = e.clientY; startX = e.clientX; pressTimer = setTimeout(() => enterBatchMode(i), 500); };
